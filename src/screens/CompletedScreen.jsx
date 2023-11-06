@@ -1,11 +1,13 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import CustomTopBar from '../components/CustomTopBar'
 
 const CompletedScreen = () => {
   return (
-    <View>
-      <Text>CompletedScreen</Text>
-    </View>
+      <View>
+        <CustomTopBar title={`Completed`} />
+        <Text>CompletedScreen</Text>
+      </View>
   )
 }
 

@@ -18,39 +18,22 @@ const CustomTopBar = ({
         <>
             <Appbar.Header>
                 <Appbar.Content title={title} />
-                <Appbar.Action icon="help-outline" onPress={() => {}} />
-                <Appbar.Action icon="dots-vertical" onPress={openMenu} />
+                <Appbar.Action icon="help-circle-outline" onPress={() => {}} />
+                <Menu
+                    visible={menuOpen}
+                    onDismiss={closeMenu}
+                    anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
+                    anchorPosition='bottom'
+                >
+                    <Menu.Item onPress={() => {}} title="Item 1" />
+                    <Menu.Item onPress={() => {}} title="Item 2" />
+                    <Divider />
+                    <Menu.Item onPress={() => {}} title="Item 3" />
+                </Menu>
             </Appbar.Header>
 
-            <MenuItems menuOpen={menuOpen} openMenu={openMenu} closeMenu={closeMenu} />
+           
         </>
-    )
-}
-
-const MenuItems = ({
-    menuOpen, 
-    openMenu, 
-    closeMenu
-}) => {
-    
-    return(
-        <View
-            style={{
-                paddingTop: 50,
-                flexDirection: 'row',
-                justifyContent: 'center',
-            }}>
-            <Menu
-                visible={menuOpen}
-                onDismiss={closeMenu}
-                anchor={<Button onPress={openMenu}>Show menu</Button>}
-            >
-                <Menu.Item onPress={() => {}} title="Item 1" />
-                <Menu.Item onPress={() => {}} title="Item 2" />
-                <Divider />
-                <Menu.Item onPress={() => {}} title="Item 3" />
-            </Menu>
-        </View>
     )
 }
 
