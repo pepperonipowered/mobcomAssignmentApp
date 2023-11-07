@@ -1,7 +1,11 @@
-import { View, } from 'react-native'
-import {useState} from 'react'
+import { Keyboard, View, } from 'react-native'
+import {useEffect, useState} from 'react'
 import { TextInput, Button, MD3Colors } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+import { addDoc, collection } from 'firebase/firestore';
+import { FIREBASE_DB } from '../../../firebaseConfig';
+
 
 const AddAssignment = ({
   navigation
@@ -17,6 +21,18 @@ const AddAssignment = ({
     setShowDatePicker(false)
     setDate(currentDate);
   };
+
+const addAssignment = () => {
+  addDoc(collection(FIREBASE_DB, 'assignments'), {
+    assignmentTitle: title,
+    assignmentDesc: description,
+    assignmentDate: date,
+    assignmentMins: mins,
+    isCompleted: false,
+    createdAt: new Date()
+  })
+  console.log('Assignment Added')
+}
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', marginHorizontal: 20 }}>
@@ -41,7 +57,7 @@ const AddAssignment = ({
       <TextInput
         label="Due Date"
         mode="outlined"
-        value={date.toLocaleDateString()}
+        value={format(date, 'MMMM dd, yyyy')}
         right={<TextInput.Icon icon="calendar" color={'black'} onPress={() => setShowDatePicker(true)} />}
         style={{ marginBottom: 20 }}
         disabled={true}
@@ -63,10 +79,14 @@ const AddAssignment = ({
         style={{ marginBottom: 20 }}
         keyboardType="numeric"
         onChangeText={(text) => {setMins(text)}}
+        onSubmitEditing={Keyboard.dismiss}
       />
 
       <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-        <Button onPress={() => {}} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
+        <Button onPress={() => {
+          addAssignment()
+          
+        }} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
             Add
         </Button>
         <Button onPress={() => {navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
