@@ -3,7 +3,9 @@ import {useState} from 'react'
 import { TextInput, Button, MD3Colors } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const AddAssignment = () => {
+const AddAssignment = ({
+  navigation
+}) => {
   const [title, setTitle] = useState('')
   const [description, setdescription] = useState('')
   const [date, setDate] = useState(new Date)
@@ -12,6 +14,7 @@ const AddAssignment = () => {
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
+    setShowDatePicker(false)
     setDate(currentDate);
   };
 
@@ -48,7 +51,7 @@ const AddAssignment = () => {
           mode="date" 
           display="calendar" 
           value={date}
-          onChange={() => {onChangeDate}}
+          onChange={onChangeDate}
         />
       )}
       <TextInput
@@ -66,7 +69,7 @@ const AddAssignment = () => {
         <Button onPress={() => {}} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
             Add
         </Button>
-        <Button onPress={() => {}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
+        <Button onPress={() => {navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
             Cancel
         </Button>
       </View>
