@@ -7,13 +7,13 @@ import CustomNavigationBar from '../components/CustomNavigationBar';
 import AddAssignment from '../components/Assignments/AddAssignment';
 import AssignmentDetails from '../components/Assignments/AssignmentDetails';
 import AssignmentList from '../components/Assignments/AssignmentList';
+import EditAssignment from '../components/Assignments/EditAssingment';
 
 const Stack = createNativeStackNavigator();
 
 const AssignmentsScreen = () => {
     return (
         <>
-            {/* <CustomTopBar title={`Assignments`} /> */}
             <Stack.Navigator
                 initialRouteName="Assignment List"
                 screenOptions={{
@@ -24,7 +24,7 @@ const AssignmentsScreen = () => {
                 <Stack.Screen name="Assignment List" component={AssignmentList} />
                 <Stack.Screen name="Add Assignment" component={AddAssignment} />
                 <Stack.Screen name="Assignment Details" component={AssignmentDetails} />
-                {/* <Stack.Screen name="EditAssignment" component={EditAssignment} /> */}
+                <Stack.Screen name="Edit Assignment" component={EditAssignment} />
             </Stack.Navigator>
         </>
     )
