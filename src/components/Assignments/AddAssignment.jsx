@@ -3,6 +3,8 @@ import {useEffect, useState} from 'react'
 import { TextInput, Button, MD3Colors } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import { addAssignment } from '../../lib/AssignmentsCRUD'
+import useForceRefresh from '../../lib/useForceRefresh'
 import { addDoc, collection } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../../firebaseConfig';
 
@@ -15,6 +17,7 @@ const AddAssignment = ({
   const [date, setDate] = useState(new Date)
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [mins, setMins] = useState('')
+  const [forceRefresh, forceRefreshId] = useForceRefresh()
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -22,17 +25,11 @@ const AddAssignment = ({
     setDate(currentDate);
   };
 
-const addAssignment = () => {
-  addDoc(collection(FIREBASE_DB, 'assignments'), {
-    assignmentTitle: title,
-    assignmentDesc: description,
-    assignmentDate: date,
-    assignmentMins: mins,
-    isCompleted: false,
-    createdAt: new Date()
-  })
-  console.log('Assignment Added')
-}
+  const handleAddAssignment = () => {
+    addAssignment(title, description, date, mins, () => {
+      console.log("Assignment added.")
+    }, forceRefresh);
+  }
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', marginHorizontal: 20 }}>
@@ -83,10 +80,7 @@ const addAssignment = () => {
       />
 
       <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-        <Button onPress={() => {
-          addAssignment()
-          
-        }} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
+        <Button onPress={handleAddAssignment} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
             Add
         </Button>
         <Button onPress={() => {navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
