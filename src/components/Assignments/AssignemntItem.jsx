@@ -17,18 +17,18 @@ const AssignemntItem = ({
         <View style={{ paddingHorizontal: 8 }}>
           <Checkbox
             // status={ isChecked ? 'checked' : 'unchecked' }
-            status={assignment.isCompleted}
+            status={!isChecked}
             onPress={() => setIsChecked(!isChecked)}
             disabled={true}
           />
         </View>
         <View style={{ flex: 1, borderLeftWidth: 2, paddingLeft: 20, borderLeftColor: MD3Colors.primary50 }}>
           <Text variant='bodyMedium' style={{ marginRight: 10 }}>
-            {assignment.date}
+            {/* {assignment.date} */}
             
           </Text>
           <Text numberOfLines={1} ellipsizeMode='tail' variant='bodyLarge' style={{ fontWeight: 'bold', color: MD3Colors.primary50 }}>
-            {assignment.title}
+            {/* {assignment.title} */}
           </Text>
         </View>
 

@@ -1,4 +1,4 @@
-import { FlatList, View, FlatList } from 'react-native'
+import { FlatList, View } from 'react-native'
 import { Portal, FAB, Text, Button, MD3Colors } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
 import { 
@@ -48,7 +48,7 @@ const AssignmentList = ({
     createAssignmentTable();
     db.transaction((tx) => {
       tx.executeSql(
-        `select * from items where done = 0;`,
+        `SELECT * FROM assignment where status = 0`,
         [],
         (_, { rows: { _array } }) => {setAssignments(_array)}
       );
@@ -64,7 +64,7 @@ const AssignmentList = ({
           keyExtractor={assignment => assignment.id}
         /> */}
         {assignments.map((assignment) => (
-          <AssignemntItem navigation={navigation} assignment={assignment} />
+          <AssignemntItem navigation={navigation} assignment={assignment} key={assignment.id}/>
         ))}
         <Portal.Host>
           <View style={{ position: 'absolute', right: 0, bottom: 0, paddingBottom: 20, paddingRight: 20 }}>
