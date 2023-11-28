@@ -13,6 +13,7 @@ import AssignmentItem from './AssignemntItem'
 
 import AssignemntItem from './AssignemntItem'
 // import { assignments } from '../../lib/mock_assignments'
+import {useForceRefresh} from '../../lib/useForceRefresh'
 
 const assignments = [
   {
@@ -30,7 +31,7 @@ const AssignmentList = ({
   navigation
 }) => {
   const [assignments, setAssignments] = useState([])
-
+  const [forceUpdate, forceUpdateId] = useForceRefresh();
   
   // dev functions for db
   const restartDB = () => {
@@ -51,7 +52,9 @@ const AssignmentList = ({
         `SELECT * FROM assignment where status = 0`,
         [],
         (_, { rows: { _array } }) => {setAssignments(_array)}
-      );
+      ),
+      null,
+      forceUpdate
     });
     printDatabaseContents();
   },[])

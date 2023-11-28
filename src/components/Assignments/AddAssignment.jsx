@@ -4,7 +4,6 @@ import { TextInput, Button, MD3Colors } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { addAssignment } from '../../lib/AssignmentsCRUD'
-import useForceRefresh from '../../lib/useForceRefresh'
 import { addDoc, collection } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../../firebaseConfig';
 
@@ -17,7 +16,6 @@ const AddAssignment = ({
   const [date, setDate] = useState(new Date)
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [mins, setMins] = useState('')
-  const [forceRefresh, forceRefreshId] = useForceRefresh()
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -28,7 +26,8 @@ const AddAssignment = ({
   const handleAddAssignment = () => {
     addAssignment(title, description, date, mins, () => {
       console.log("Assignment added.")
-    }, forceRefresh);
+      navigation.goBack()
+    });
   }
 
   return (
@@ -80,7 +79,7 @@ const AddAssignment = ({
       />
 
       <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-        <Button onPress={handleAddAssignment} uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
+        <Button onPress={ handleAddAssignment } uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
             Add
         </Button>
         <Button onPress={() => {navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
