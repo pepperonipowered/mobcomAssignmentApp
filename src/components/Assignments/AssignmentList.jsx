@@ -1,74 +1,60 @@
 import { FlatList, View } from 'react-native'
-import { Portal, FAB, Text, Button, MD3Colors } from 'react-native-paper'
+import { Portal, FAB, Text, Button, MD3Colors, ActivityIndicator } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
-import { 
-  dropAssignmentTable, 
-  printDatabaseContents,
-  getNotCompletedAssignments,
-  getCompletedAssignments,
-  createAssignmentTable,
-  db
-} from '../../lib/AssignmentsCRUD'
 import AssignmentItem from './AssignemntItem'
+import { FIREBASE_DB } from '../../../firebaseConfig'
+import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestore'
 
-import AssignemntItem from './AssignemntItem'
-// import { assignments } from '../../lib/mock_assignments'
-import {useForceRefresh} from '../../lib/useForceRefresh'
+const assignmentsRef = collection(FIREBASE_DB, 'assignments');
 
-const assignments = [
-  {
-      id:1,
-      title:"Make It Happen",
-      description:"Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat.",
-      date:"4/28/2023",
-      mins:45,
-      isCompleted:true,
-      createdAt:"3/27/2023",
-      updatedAt:"11/7/2023"
-  },
-]
 const AssignmentList = ({
   navigation
 }) => {
   const [assignments, setAssignments] = useState([])
-  const [forceUpdate, forceUpdateId] = useForceRefresh();
-  
-  // dev functions for db
-  const restartDB = () => {
-    db.closeAsync();
-    console.log('Database closed.')
-  }
-  const clearDB = () => {
-    dropAssignmentTable();
-  }
-  const deleteDB = () => {
-    db.deleteAsync();
-    console.log('Database deleted.')
-  }
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    createAssignmentTable();
-    db.transaction((tx) => {
-      tx.executeSql(
-        `SELECT * FROM assignment where status = 0`,
-        [],
-        (_, { rows: { _array } }) => {setAssignments(_array)}
-      ),
-      null,
-      forceUpdate
-    });
-    printDatabaseContents();
-  },[])
+    // subscribe = get data from the database real-time
+    const subscribe = onSnapshot(assignmentsRef, 
+    query(
+      assignmentsRef, 
+      where('status', '==', false),
+      orderBy('createdAt', 'desc')
+    ),
+    {
+      next: (snapshot) => {
+        const assignments = [];
+        snapshot.docs.map((doc) => {
+          assignments.push({id: doc.id, ...doc.data()})
+        })
+        setAssignments(assignments)
+        setLoading(false)
+      }
+    })
+    // got all data? then unsubscribe from the connection
+    return () => subscribe();
+  }, [])
+
   console.log("Assignments: ", assignments)
+
   return (
     <View style={{ flex: 1, }}>
-        {/* <FlatList
-          data={assignments}
-          renderItem={(assignment) => <AssignemntItem navigation={navigation} assignment={assignment} />}
-          keyExtractor={assignment => assignment.id}
-        /> */}
-        {assignments.map((assignment) => (
-          <AssignemntItem navigation={navigation} assignment={assignment} key={assignment.id}/>
-        ))}
+        {loading ? 
+          (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} >
+              <ActivityIndicator animating={true} color={MD3Colors.primary50} size={'large'} style={{ marginBottom: 5 }} />
+              <Text variant='titleMedium'>Loading assignments...</Text>
+            </View>
+          )
+          :(
+            <FlatList
+              data={assignments}
+              renderItem={(item) => <AssignmentItem assignment={item}/>}
+              keyExtractor={(assignment) => assignment.id}
+            />
+          )
+        }
+        
         <Portal.Host>
           <View style={{ position: 'absolute', right: 0, bottom: 0, paddingBottom: 20, paddingRight: 20 }}>
             <FAB
@@ -77,33 +63,6 @@ const AssignmentList = ({
             />
           </View>
         </Portal.Host>
-        <FlatList
-          data={assignments}
-          renderItem={(assignment) => <AssignmentItem/>}
-          keyExtractor={(assignment) => assignment.id}
-        />
-        <Button
-          mode="contained"
-          style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, marginRight: 20 }}
-          onPress={() => {
-            restartDB()
-          }}
-        >Close Db</Button>
-        <Button
-          mode="contained"
-          style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, marginRight: 20 }}
-          onPress={() => {
-            clearDB()
-          }}
-        >Clear Db</Button>
-        <Button
-          mode="contained"
-          style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, marginRight: 20 }}
-          onPress={() => {
-            deleteDB()
-          }}
-        >Delete Db</Button>
-        
     </View>
   )
 }
