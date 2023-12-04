@@ -20,7 +20,7 @@ const AssignemntItem = ({
   const assignment_date = new Date(item.date.seconds * 1000 + item.date.nanoseconds / 1000000)
 
   const handleCheckbox = async (assignmentId, newStatus) => {
-    await updateDoc(doc(FIREBASE_DB, 'assignments', assignmentId), { status: newStatus })
+    setTimeout(async () => await updateDoc(doc(FIREBASE_DB, 'assignments', assignmentId), { status: newStatus }),1000)
     setIsChecked(newStatus)
   }
 
@@ -69,7 +69,8 @@ const AssignemntItem = ({
             <Menu.Item 
                 onPress={
                   () => {
-                    navigation.navigate('Edit Assignment')
+                    navigation.navigate('Edit Assignment', { assignmentId: assignment.item.id})
+                    console.log(assignment.item.id)
                     closeMenu();
                   }
                 } 

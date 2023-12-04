@@ -15,13 +15,11 @@ const AssignmentList = ({
 
   useEffect(() => {
     // subscribe = get data from the database real-time
-    const subscribe = onSnapshot(assignmentsRef, 
+    const subscribe = onSnapshot( 
     query(
-      assignmentsRef, 
-      where('status', '==', false),
-      orderBy('createdAt', 'desc')
-    ),
-    {
+      assignmentsRef,
+      where("status", "==", false),
+    ), {
       next: (snapshot) => {
         const assignments = [];
         snapshot.docs.map((doc) => {
@@ -29,8 +27,8 @@ const AssignmentList = ({
         })
         setAssignments(assignments)
         setLoading(false)
-      }
-    })
+        console.log(assignments)
+    }})
     // got all data? then unsubscribe from the connection
     return () => subscribe();
   }, [])
@@ -49,7 +47,7 @@ const AssignmentList = ({
           :(
             <FlatList
               data={assignments}
-              renderItem={(item) => <AssignmentItem assignment={item}/>}
+              renderItem={(item) => <AssignmentItem assignment={item} navigation={navigation}/>}
               keyExtractor={(assignment) => assignment.id}
             />
           )
