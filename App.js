@@ -7,7 +7,7 @@ import AssignmentsScreen from "./src/screens/AssignmentsScreen";
 import CompletedScreen from "./src/screens/CompletedScreen";
 import AnalyticsScreen from "./src/screens/AnalyticsScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
-
+import SubjectsScreen from "./src/screens/SubjectsScreen";
 
 /**
  * This is where we define our navigations either stack or tab.
@@ -46,6 +46,16 @@ export default function App() {
               tabBarLabel: 'Completed',
               tabBarIcon: () => {
                 return <Icon name="playlist-check" size={24} color='black' />;
+              },
+            }}
+          />
+          <Tab.Screen 
+            name="SubjectsScreen" 
+            component={SubjectsScreen} 
+            options={{
+              tabBarLabel: 'Subjects',
+              tabBarIcon: () => {
+                return <Icon name="book" size={24} color='black' />;
               },
             }}
           />

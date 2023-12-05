@@ -26,7 +26,7 @@ const AssignemntItem = ({
   }
 
   const handleDeleteAssignment = async (assignmentId) => {
-    setTimeout(async () => await deleteDoc(doc(FIREBASE_DB, 'assignments', assignmentId), { status: newStatus }),1000)
+    setTimeout(async () => await deleteDoc(doc(FIREBASE_DB, 'assignments', assignmentId)),1000)
   }
   
 
@@ -76,7 +76,6 @@ const AssignemntItem = ({
                 onPress={
                   () => {
                     navigation.navigate('Edit Assignment', { assignmentId: assignment.item.id})
-                    console.log(assignment.item.id)
                     closeMenu();
                   }
                 } 
@@ -87,7 +86,11 @@ const AssignemntItem = ({
             {
               assignment.item.status ? (
                 <Menu.Item 
-                  onPress={() => handleDeleteAssignment(assignment.item.id, !isChecked)} 
+                  onPress={() => {
+                    handleDeleteAssignment(assignment.item.id)
+                  }
+                    
+                  } 
                   title="Delete" 
                   leadingIcon={'trash-can-outline'}
                 />

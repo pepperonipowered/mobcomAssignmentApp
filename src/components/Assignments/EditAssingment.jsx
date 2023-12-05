@@ -2,7 +2,7 @@ import { Keyboard, View, } from 'react-native'
 import { useEffect, useState} from 'react'
 import { TextInput, Button, MD3Colors, HelperText } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Formik } from 'formik';
 import { FIREBASE_DB } from '../../../firebaseConfig';
 import { collection, serverTimestamp, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
@@ -14,67 +14,79 @@ const EditAssignment = ({
 }) => {
   const [date, setDate] = useState(new Date)
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [assignment, setAssignment] = useState()
+  const [assignment, setAssignment] = useState([])
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  
   
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
     setShowDatePicker(false)
     setDate(currentDate);
   };
-  
-  const assignmentRef = doc(collection(FIREBASE_DB, 'assignments'),assignmentId)
   const { assignmentId } = route.params
+  
+  
+  const assignmentRef = doc(collection(FIREBASE_DB, 'assignments'), assignmentId)
 
   const fetchSingleAssignment = async () => {
     const subscribe = onSnapshot( assignmentRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
           setAssignment(docSnapshot.data())
-          console.log(assignment)
+          setIsDataLoaded(true);
         } else {
           console.log('Assignment does not exist')
         }
       }
     )
     // got all data? then unsubscribe from the connection
-    return () => subscribe();
+    return  () => subscribe;
   }
 
   useEffect(() => {
     fetchSingleAssignment()
   }, [])
 
+  const seconds = assignment.date?.seconds ?? 0
+  const nanoseconds = assignment.date?.nanoseconds ?? 0
+  const formattedDate = new Date(seconds * 1000 + nanoseconds / 1000000)
+  console.log('F0rmatted date', new Date(formattedDate))
+  console.log(assignment.notif_mins)
+
   const editAssignment = async (values) => {
     try {
-      await updateDoc(collection(FIREBASE_DB, 'assignments'), {
+      await updateDoc(doc(FIREBASE_DB, 'assignments', assignmentId), {
         title: values.title,
         description: values.description,
         notif_mins: values.notif_mins,
         date: values.date,
         status: values.status,
-        createdAt: values.createdAt,
         updatedAt: values.updatedAt
       })
+      
+      
     } catch (error) {
       console.log(error)
     }
   }
 
   const onSubmit = (values) => {
-    editAssignment(values)
+    console.log(values.title)
+    // editAssignment(values)
     navigation.navigate('Assignment List');
   }
   
   return (
     <>
+    {isDataLoaded && (
       <Formik
         initialValues={{
-          title: '',
-          description: '',
-          notif_mins: '',
-          date: date,
-          status: false,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          title: assignment.title,
+          description: assignment.description,
+          notif_mins: assignment.notif_mins,
+          date: formattedDate,
+          status: assignment.status,
+          updatedAt: new Date()
         }}
         onSubmit={onSubmit}
         validationSchema={addAssignmentSchema}
@@ -107,7 +119,7 @@ const EditAssignment = ({
             <TextInput
               label="Due Date"
               mode="outlined"
-              value={format(date, 'MMMM dd, yyyy')}
+              value={format(new Date(formattedDate), 'MMMM dd, yyyy')}
               right={<TextInput.Icon icon="calendar" color={'black'} onPress={() => setShowDatePicker(true)} />}
               style={{ marginBottom: 20 }}
               disabled={true}
@@ -116,7 +128,7 @@ const EditAssignment = ({
               <DateTimePicker 
                 mode="date" 
                 display="calendar" 
-                value={date}
+                value={new Date(formattedDate)}
                 onChange={onChangeDate}
                 minimumDate={new Date()}
               />
@@ -138,8 +150,8 @@ const EditAssignment = ({
             </HelperText>
 
             <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-              <Button onPress={ handleSubmit } uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
-                  Add
+              <Button onPress={ onSubmit } uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
+                  Save
               </Button>
               <Button onPress={() => {Keyboard.dismiss(); navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
                   Cancel
@@ -149,7 +161,7 @@ const EditAssignment = ({
         )}
         
       </Formik>
-      
+      )}
     </>
   )
 }

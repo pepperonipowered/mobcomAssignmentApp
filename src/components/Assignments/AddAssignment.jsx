@@ -7,6 +7,17 @@ import { Formik } from 'formik';
 import { FIREBASE_DB } from '../../../firebaseConfig';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { addAssignmentSchema } from '../../lib/form-schemas';
+import * as Notifications from "expo-notifications";
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 
 const AddAssignment = ({
   navigation
@@ -20,6 +31,19 @@ const AddAssignment = ({
     setDate(currentDate);
   };
 
+  const scheduleNotification = async (triggerDate, title, body) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: body,
+        sound: 'default',
+        vibrate: [0, 250, 250, 250],
+        // data: { data: "goes here" },
+      },
+      trigger: { date: triggerDate },
+    });
+  };
+
   const addAssignment = async (values) => {
     try {
       await addDoc(collection(FIREBASE_DB, 'assignments'), {
@@ -31,6 +55,35 @@ const AddAssignment = ({
         createdAt: values.createdAt,
         updatedAt: values.updatedAt
       })
+
+      const reminderDate = new Date(values.date);
+      reminderDate.setMinutes(reminderDate.getMinutes() - notif_mins);
+      reminderDate.setSeconds(0);
+      console.log(reminderDate)
+
+      if (values.notif_mins !==0 && date >= new Date()) {
+        await scheduleNotification(
+          values.date,
+          `Reminder for ${values.title}`,
+          `Your assignment ${values.title} is due in ${values.notif_mins} minutes!`
+        );
+      }
+
+  
+      // // Update the dueDateTimeValue calculation to consider exact minutes
+      // const dueTimeInMinutes = new Date(dueDateTimeValue);
+  
+      // // Set the seconds of the due time to 0
+      // dueTimeInMinutes.setSeconds(0);
+  
+      // if (dueTimeInMinutes > new Date()) {
+      //   await scheduleNotification(
+      //     dueTimeInMinutes,
+      //     `${description}`,
+      //     `Your assignment "${description}" is due now!`
+      //   );
+      // }
+
     } catch (error) {
       console.log(error)
     }
@@ -47,7 +100,7 @@ const AddAssignment = ({
         initialValues={{
           title: '',
           description: '',
-          notif_mins: '',
+          notif_mins: 0,
           date: date,
           status: false,
           createdAt: serverTimestamp(),

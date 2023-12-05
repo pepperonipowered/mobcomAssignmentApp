@@ -1,10 +1,10 @@
 import { FlatList, View } from 'react-native'
 import { Portal, FAB, Text, Button, MD3Colors, ActivityIndicator } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
-import AssignmentItem from './AssignemntItem'
-import { FIREBASE_DB } from '../../../firebaseConfig'
+import { FIREBASE_DB } from '../../firebaseConfig'
 import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestore'
 import CustomTopBar from '../components/CustomTopBar'
+import AssignmentItem from '../components/Assignments/AssignemntItem'
 
 
 const assignmentsRef = collection(FIREBASE_DB, 'assignments');
@@ -35,7 +35,7 @@ const CompletedScreen = ({navigation}) => {
 
   console.log("Assignments: ", assignments)
   return (
-      <View>
+      <>
         <CustomTopBar title={`Completed`} />
           <View style={{ flex: 1, }}>
             {loading ? 
@@ -63,7 +63,7 @@ const CompletedScreen = ({navigation}) => {
             </View>
           </Portal.Host>
         </View>
-      </View>
+      </>
   )
 }
 
