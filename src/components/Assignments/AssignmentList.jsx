@@ -7,6 +7,14 @@ import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestor
 
 const assignmentsRef = collection(FIREBASE_DB, 'assignments');
 
+
+/*
+  missing:
+    notification
+    subject input
+    analytics
+*/
+
 const AssignmentList = ({
   navigation
 }) => {

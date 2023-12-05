@@ -2,7 +2,7 @@ import { View, Alert } from 'react-native'
 import { Text, Checkbox, Menu, IconButton, MD3Colors, Divider } from 'react-native-paper';
 import React, { useState } from 'react'
 import { format } from 'date-fns';
-import { updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../../firebaseConfig';
 
 const AssignemntItem = ({
@@ -19,10 +19,16 @@ const AssignemntItem = ({
 
   const assignment_date = new Date(item.date.seconds * 1000 + item.date.nanoseconds / 1000000)
 
+  
   const handleCheckbox = async (assignmentId, newStatus) => {
     setTimeout(async () => await updateDoc(doc(FIREBASE_DB, 'assignments', assignmentId), { status: newStatus }),1000)
     setIsChecked(newStatus)
   }
+
+  const handleDeleteAssignment = async (assignmentId) => {
+    setTimeout(async () => await deleteDoc(doc(FIREBASE_DB, 'assignments', assignmentId), { status: newStatus }),1000)
+  }
+  
 
   return (
     <View style={{flex:1}}>
@@ -78,11 +84,17 @@ const AssignemntItem = ({
                 leadingIcon={'circle-edit-outline'}
             />
             <Divider/>
-            <Menu.Item 
-                onPress={()=>{}} 
-                title="Delete" 
-                leadingIcon={'trash-can-outline'}
-            />
+            {
+              assignment.item.status ? (
+                <Menu.Item 
+                  onPress={() => handleDeleteAssignment(assignment.item.id, !isChecked)} 
+                  title="Delete" 
+                  leadingIcon={'trash-can-outline'}
+                />
+              ) : (
+                ''
+              )
+            }
             <Divider/>
             <Menu.Item 
                 onPress={closeMenu} 

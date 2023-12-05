@@ -5,7 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Formik } from 'formik';
 import { FIREBASE_DB } from '../../../firebaseConfig';
-import { collection, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { addAssignmentSchema } from '../../lib/form-schemas';
 
 const EditAssignment = ({
@@ -15,33 +15,32 @@ const EditAssignment = ({
   const [date, setDate] = useState(new Date)
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [assignment, setAssignment] = useState()
-  const { assignmentId } = route.params
-
+  
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
     setShowDatePicker(false)
     setDate(currentDate);
   };
+  
+  const assignmentRef = doc(collection(FIREBASE_DB, 'assignments'),assignmentId)
+  const { assignmentId } = route.params
 
-  const fetchSingleAssignment = async (assignmentId) => {
-    const subscribe = onSnapshot( 
-    query(
-        assignmentsRef,
-        where("id", "==", assignmentId),
-    ), {
-        next: (snapshot) => {
-            const assignment = [];
-            assignment.push({...snapshot})
-            setAssignment(assignment)
-            console.log('Assignment' ,assignment)
+  const fetchSingleAssignment = async () => {
+    const subscribe = onSnapshot( assignmentRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          setAssignment(docSnapshot.data())
+          console.log(assignment)
+        } else {
+          console.log('Assignment does not exist')
         }
-    })
+      }
+    )
     // got all data? then unsubscribe from the connection
     return () => subscribe();
   }
 
   useEffect(() => {
-    fetchSingleAssignment(assignmentId)
+    fetchSingleAssignment()
   }, [])
 
   const editAssignment = async (values) => {
