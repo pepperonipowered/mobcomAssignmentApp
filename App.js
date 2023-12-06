@@ -69,18 +69,9 @@ export default function App() {
               },
             }}
           />
-          <Tab.Screen 
-            name="SettingsScreen" 
-            component={SettingsScreen} 
-            options={{
-              tabBarLabel: 'Settings',
-              tabBarIcon: () => {
-                return <Icon name="cog" size={24} color='black' />;
-              },
-            }}
-          />
         </Tab.Navigator>
       </NavigationContainer>
+      
     </PaperProvider>
   );
 }

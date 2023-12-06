@@ -22,7 +22,7 @@ const SubjectsScreen = () => {
                 }}
                 name='SubjectsStack'
             >
-                <Stack.Screen name="Subject List" component={SubjectsList} />
+                <Stack.Screen name="Subjects List" component={SubjectsList} />
                 <Stack.Screen name="Add Subject" component={AddSubject} />
                 <Stack.Screen name="Subject Details" component={SubjectDetails} />
                 <Stack.Screen name="Subject Assignment" component={EditSubject} />

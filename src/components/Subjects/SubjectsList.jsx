@@ -22,13 +22,13 @@ export default function SubjectsList ({ navigation }) {
           })
           setSubjects(subjects)
           setLoading(false)
-          console.log(subjects)
       }})
       // got all data? then unsubscribe from the connection
       return () => subscribe();
     }, [])
+
     return(
-        <View style={{ flex: 1, }}>
+      <View style={{ flex: 1, }}>
         {loading ? 
           (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} >
@@ -39,20 +39,12 @@ export default function SubjectsList ({ navigation }) {
           :(
             <FlatList
               data={subjects}
-              renderItem={(subject) => <SubjectItem subject={subject} navigation={navigation}/>}
+              renderItem={(item) => <SubjectItem subject={item} navigation={navigation}/>}
               keyExtractor={(subject) => subject.id}
             />
           )
         }
-        
-        <Portal.Host>
-          <View style={{ position: 'absolute', right: 0, bottom: 0, paddingBottom: 20, paddingRight: 20 }}>
-            <FAB
-                icon="plus"
-                onPress= { () => {navigation.navigate("Add Subject")} }
-            />
-          </View>
-        </Portal.Host>
     </View>
+    
     )
 }

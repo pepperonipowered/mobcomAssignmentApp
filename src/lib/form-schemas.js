@@ -7,3 +7,8 @@ export const addAssignmentSchema = yup.object().shape({
     date: yup.date().required('Assignment date is required.'),
     status: yup.boolean(),
 })
+
+export const addSubjectSchema = yup.object().shape({
+    name: yup.string().min(5, 'Subject name must have at least 5 characters.').max(50, 'Subject name must not exeed 50 characters.').required('Subject name is required.'),
+    code: yup.string().max(50, 'Subject code must not exeed 50 characters.').required('Assignment code is required.'),
+})

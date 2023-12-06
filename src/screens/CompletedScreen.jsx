@@ -53,15 +53,6 @@ const CompletedScreen = ({navigation}) => {
                 />
               )
             }
-            
-          <Portal.Host>
-            <View style={{ position: 'absolute', right: 0, bottom: 0, paddingBottom: 20, paddingRight: 20 }}>
-              <FAB
-                  icon="plus"
-                  onPress= { () => {navigation.navigate("Add Assignment")} }
-              />
-            </View>
-          </Portal.Host>
         </View>
       </>
   )

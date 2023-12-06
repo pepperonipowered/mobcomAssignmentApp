@@ -1,4 +1,4 @@
-import { View, Alert } from 'react-native'
+import { View } from 'react-native'
 import { Text, Checkbox, Menu, IconButton, MD3Colors, Divider } from 'react-native-paper';
 import React, { useState } from 'react'
 import { format } from 'date-fns';
@@ -37,8 +37,8 @@ const AssignemntItem = ({
         <View style={{ paddingHorizontal: 8 }}>
           <Checkbox
             status={ isChecked ? 'checked' : 'unchecked' }
-            onPress={() => handleCheckbox(assignment.item.id, !isChecked)}
-            disabled={false}
+            onPress={() => handleCheckbox(item.id, !isChecked)}
+            disabled={ item.status ? true : false }
           />
         </View>
         <View style={{ flex: 1, borderLeftWidth: 2, paddingLeft: 20, borderLeftColor: MD3Colors.primary50 }}>

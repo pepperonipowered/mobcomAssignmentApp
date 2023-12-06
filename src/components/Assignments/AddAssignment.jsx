@@ -1,29 +1,51 @@
 import { Keyboard, View, } from 'react-native'
-import { useState} from 'react'
-import { TextInput, Button, MD3Colors, HelperText } from 'react-native-paper'
+import { useEffect, useState, useCallback } from 'react'
+import { TextInput, Button, MD3Colors, HelperText, Menu, Divider, ActivityIndicator } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Formik } from 'formik';
 import { FIREBASE_DB } from '../../../firebaseConfig';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, getDocs } from 'firebase/firestore';
 import { addAssignmentSchema } from '../../lib/form-schemas';
-import * as Notifications from "expo-notifications";
+import DropDownPicker from 'react-native-dropdown-picker';
 
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+const subjectsRef = collection(FIREBASE_DB, 'subjects');
 
 
 const AddAssignment = ({
   navigation
 }) => {
   const [date, setDate] = useState(new Date)
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false)
+
+  const [openSubject, setOpenSubject] = useState(false);
+  const [subjects, setSubjects] = useState([{
+    label: '',
+    value: ''
+  }]);
+  const [subject, setSubject] = useState('');
+
+  const [openPaper, setOpenPaper] = useState(false)
+  const [paper, setPaper] = useState('')
+  const [papers, setPapers] = useState([
+    {label: '1/4', value: 'one-fourth'},
+    {label: '1/2', value: 'one-half'},
+    {label: '1 whole', value: 'one-whole'},
+    {label: 'Short bond paper', value: 'short-bond-paper'},
+    {label: 'Long bond paper', value: 'long-bond-paper'},
+  ]);
+
+  // const onSubjectOpen = useCallback(() => {
+  //   setOpenSubject(!openPaper);
+  // }, []);
+
+  // const onPaperOpen = useCallback(() => {
+  //   setOpenPaper(!openSubject);
+  // }, []);
+
+  const [loading, setLoading] = useState(true);
+
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -31,64 +53,42 @@ const AddAssignment = ({
     setDate(currentDate);
   };
 
-  const scheduleNotification = async (triggerDate, title, body) => {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: title,
-        body: body,
-        sound: 'default',
-        vibrate: [0, 250, 250, 250],
-        // data: { data: "goes here" },
-      },
-      trigger: { date: triggerDate },
-    });
-  };
-
   const addAssignment = async (values) => {
     try {
       await addDoc(collection(FIREBASE_DB, 'assignments'), {
         title: values.title,
         description: values.description,
+        subject: subject,
         notif_mins: values.notif_mins,
         date: values.date,
         status: values.status,
+        paper: paper,
         createdAt: values.createdAt,
         updatedAt: values.updatedAt
       })
-
-      const reminderDate = new Date(values.date);
-      reminderDate.setMinutes(reminderDate.getMinutes() - notif_mins);
-      reminderDate.setSeconds(0);
-      console.log(reminderDate)
-
-      if (values.notif_mins !==0 && date >= new Date()) {
-        await scheduleNotification(
-          values.date,
-          `Reminder for ${values.title}`,
-          `Your assignment ${values.title} is due in ${values.notif_mins} minutes!`
-        );
-      }
-
-  
-      // // Update the dueDateTimeValue calculation to consider exact minutes
-      // const dueTimeInMinutes = new Date(dueDateTimeValue);
-  
-      // // Set the seconds of the due time to 0
-      // dueTimeInMinutes.setSeconds(0);
-  
-      // if (dueTimeInMinutes > new Date()) {
-      //   await scheduleNotification(
-      //     dueTimeInMinutes,
-      //     `${description}`,
-      //     `Your assignment "${description}" is due now!`
-      //   );
-      // }
 
     } catch (error) {
       console.log(error)
     }
   }
+  const fetchSubjects = async () => {
+    try {
+      const snapshot = await getDocs(subjectsRef);
+      const subjects = snapshot.docs.map((doc) => ({
+        label: doc.data().code,
+        value: doc.id
+      }));
+      setSubjects(subjects);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+  useEffect(() => {
+    fetchSubjects()
+  }, [])
 
+  console.log(subjects)
   const onSubmit = (values) => {
     addAssignment(values)
     navigation.navigate('Assignment List');
@@ -100,7 +100,7 @@ const AddAssignment = ({
         initialValues={{
           title: '',
           description: '',
-          notif_mins: 0,
+          notif_mins: '',
           date: date,
           status: false,
           createdAt: serverTimestamp(),
@@ -110,7 +110,7 @@ const AddAssignment = ({
         validationSchema={addAssignmentSchema}
       >
         {({values, errors, handleChange, handleBlur, handleSubmit, isSubmitting,}) => (
-          <View style={{ flex: 1, justifyContent: 'center', marginHorizontal: 20 }}>
+          <View style={{ flex: 1, marginHorizontal: 20, marginTop:20 }}>
             <TextInput
               label="Assignment title (required)"
               placeholder="e.g. MOBCOM Lab 1"
@@ -118,7 +118,6 @@ const AddAssignment = ({
               value={values.title}
               onChangeText={handleChange('title')}
               right={<TextInput.Icon icon="clipboard-text-outline" />}
-              style={{  }}
               onBlur={handleBlur('title')}
             />
             <HelperText type="error" visible={errors.title ? true : false}>
@@ -134,14 +133,32 @@ const AddAssignment = ({
               style={{ marginBottom: 20 }}
               onBlur={handleBlur('description')}
             />
+
+
+          <View style={{ marginBottom: 20 }}>
+            <DropDownPicker
+              open={openSubject}
+              value={subject}
+              items={subjects}
+              setOpen={setOpenSubject}
+              setValue={setSubject}
+              placeholder='Select a subject'
+              onOpen={() => setOpenSubject(!openSubject)}
+            />
+          </View>
+
+          
+
             <TextInput
               label="Due Date"
               mode="outlined"
               value={format(date, 'MMMM dd, yyyy')}
               right={<TextInput.Icon icon="calendar" color={'black'} onPress={() => setShowDatePicker(true)} />}
-              style={{ marginBottom: 20 }}
+              style={{ marginBottom: 20}}
               disabled={true}
             />
+
+
             {showDatePicker && (
               <DateTimePicker 
                 mode="date" 
@@ -157,7 +174,6 @@ const AddAssignment = ({
               mode="outlined"
               value={values.notif_mins}
               right={<TextInput.Icon icon="clock-outline" color={'black'} />}
-              style={{ marginBottom: 20 }}
               keyboardType="numeric"
               onChangeText={handleChange('notif_mins')}
               onSubmitEditing={Keyboard.dismiss}
@@ -166,10 +182,21 @@ const AddAssignment = ({
             <HelperText type="error" visible={errors.notif_mins ? true : false}>
               {errors.notif_mins}
             </HelperText>
-
+            <View style={{ marginBottom: 20 }}>
+            <DropDownPicker
+              open={openPaper}
+              value={paper}
+              items={papers}
+              setOpen={setOpenPaper}
+              setValue={setPaper}
+              setItems={setPapers}
+              placeholder='Select the format'
+              onOpen={() => setOpenPaper(!openPaper)}
+            />
+          </View>
             <View style={{ alignItems: 'center', flexDirection: 'row' }}>
               <Button onPress={ handleSubmit } uppercase={false} mode="contained" style={{ borderRadius:5, backgroundColor: MD3Colors.primary50, width: 100, marginRight: 20 }}>
-                  Add
+                  Submit
               </Button>
               <Button onPress={() => {Keyboard.dismiss(); navigation.goBack()}} uppercase={false} mode="outlined" style={{ borderRadius:5, width: 100 }}>
                   Cancel
