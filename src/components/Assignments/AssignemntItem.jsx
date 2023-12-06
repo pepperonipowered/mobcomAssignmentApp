@@ -28,7 +28,6 @@ const AssignemntItem = ({
   const handleDeleteAssignment = async (assignmentId) => {
     setTimeout(async () => await deleteDoc(doc(FIREBASE_DB, 'assignments', assignmentId)),1000)
   }
-  
 
   return (
     <View style={{flex:1}}>
@@ -67,21 +66,29 @@ const AssignemntItem = ({
             <Menu.Item 
                 onPress={
                   () => {
+                    navigation.navigate('Assignment Details', { assignmentId: assignment.item.id, subjectId: assignment.item.subject })
+                    closeMenu();
                   }
                 } 
                 title="View" 
                 leadingIcon={'eye'}
             />
-            <Menu.Item 
-                onPress={
-                  () => {
-                    navigation.navigate('Edit Assignment', { assignmentId: assignment.item.id})
-                    closeMenu();
-                  }
-                } 
-                title="Edit" 
-                leadingIcon={'circle-edit-outline'}
-            />
+            {
+              assignment.item.status ? (
+                ''
+              ) : (
+                <Menu.Item 
+                  onPress={
+                    () => {
+                      navigation.navigate('Edit Assignment', { assignmentId: assignment.item.id, subjectId: assignment.item.subject })
+                      closeMenu();
+                    }
+                  } 
+                  title="Edit" 
+                  leadingIcon={'circle-edit-outline'}
+                />
+              )
+            }
             <Divider/>
             {
               assignment.item.status ? (

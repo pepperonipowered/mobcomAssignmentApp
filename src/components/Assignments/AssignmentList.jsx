@@ -1,27 +1,22 @@
 import { FlatList, View } from 'react-native'
-import { Portal, FAB, Text, Button, MD3Colors, ActivityIndicator } from 'react-native-paper'
+import { Text, MD3Colors, ActivityIndicator } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
 import AssignmentItem from './AssignemntItem'
 import { FIREBASE_DB } from '../../../firebaseConfig'
 import { collection, query, onSnapshot, orderBy, where } from 'firebase/firestore'
 import { useRoute } from '@react-navigation/native'
+import FloatingActionButton from '../FloatingActionButton'
+
 
 const assignmentsRef = collection(FIREBASE_DB, 'assignments');
 
-
-/*
-  missing:
-    notification
-    subject input
-    analytics
-*/
 
 const AssignmentList = ({
   navigation
 }) => {
   const [assignments, setAssignments] = useState([])
   const [loading, setLoading] = useState(true);
-  const [fab, setFab] = useState(false);
+  
 
   const location = useRoute();
 
@@ -49,6 +44,7 @@ const AssignmentList = ({
 
   return (
     <>
+    
     <View style={{flex: 1 }}>
         {loading ? 
           (
@@ -67,33 +63,7 @@ const AssignmentList = ({
         }
         
     </View>
-      <Portal>
-        <FAB.Group
-          style={{ position: 'absolute', bottom: 0, right: 0, paddingBottom: 90, paddingRight: 5 }}
-          open={fab}
-          visible
-          icon={fab ? 'close' : 'plus'}
-          label='Add an item'
-          actions={[
-            { 
-              icon: 'format-list-bulleted', 
-              label: 'Add an assignment',
-              onPress: () => {navigation.navigate("Add Assignment")} 
-            },
-            {
-              icon: 'book',
-              label: 'Add a subject',
-              onPress: () => {navigation.navigate("Add Subject")},
-            },
-          ]}
-          onStateChange={() => setFab(!fab)}
-          onPress={() => {
-            if (fab) {
-              // do something if the speed dial is open
-            }
-          }}
-        />
-      </Portal>
+       <FloatingActionButton navigation={navigation} />
     </>
   )
 }

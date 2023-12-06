@@ -14,7 +14,6 @@ const CompletedScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // subscribe = get data from the database real-time
     const subscribe = onSnapshot( 
     query(
       assignmentsRef,
@@ -29,7 +28,6 @@ const CompletedScreen = ({navigation}) => {
         setLoading(false)
         console.log(assignments)
     }})
-    // got all data? then unsubscribe from the connection
     return () => subscribe();
   }, [])
 
