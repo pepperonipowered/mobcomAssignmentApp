@@ -26,25 +26,6 @@ export default function CustomNavigationBar({
                 {!back ? (
                     <>
                         <Menu
-                            visible={visibleFirst}
-                            onDismiss={closeFirstMenu}
-                            anchor={
-                                <Appbar.Action
-                                    icon="help-circle-outline"
-                                    onPress={openFirstMenu}
-                                />
-                            }
-                            anchorPosition='bottom'
-                        >
-                                <Menu.Item
-                                    onPress={() => {
-                                        navigation.navigate('Help');
-                                        closeFirstMenu();
-                                    }}
-                                    title={'Help'}
-                                />
-                        </Menu>
-                        <Menu
                             visible={visibleSecond}
                             onDismiss={closeSecondMenu}
                             anchor={
@@ -64,17 +45,17 @@ export default function CustomNavigationBar({
                             />
                             <Menu.Item
                                 onPress={() => {
-                                    navigation.navigate('AnalyticScreen');
+                                    navigation.navigate('AnalyticsScreen');
                                     closeSecondMenu();
                                 }}
                                 title={'Analytics'}
                             />
                             <Menu.Item
                                 onPress={() => {
-                                    navigation.navigate('SettingScreen');
+                                    navigation.navigate('SubjectsScreen');
                                     closeSecondMenu();
                                 }}
-                                title={'Settings'}
+                                title={'Subjects'}
                             />
                         </Menu>
                     </>
