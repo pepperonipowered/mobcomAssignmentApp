@@ -18,17 +18,26 @@ const CustomTopBar = ({
         <>
             <Appbar.Header>
                 <Appbar.Content title={title} />
-                <Appbar.Action icon="help-circle-outline" onPress={() => {}} />
                 <Menu
                     visible={menuOpen}
                     onDismiss={closeMenu}
                     anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
                     anchorPosition='bottom'
                 >
-                    <Menu.Item onPress={() => {}} title="Item 1" />
-                    <Menu.Item onPress={() => {}} title="Item 2" />
+                    <Menu.Item onPress={() => {
+                        navigation.navigate('Assignment List');
+                        closeSecondMenu();
+                    }} 
+                    title="Assignment List" />
+                    <Menu.Item onPress={() => {
+                        navigation.navigate('AnalyticsScreen');
+                        closeSecondMenu();
+                    }} title="Analytics" />
                     <Divider />
-                    <Menu.Item onPress={() => {}} title="Item 3" />
+                    <Menu.Item onPress={() => {
+                        navigation.navigate('SubjectsScreen');
+                        closeSecondMenu();
+                    }} title="Subject" />
                 </Menu>
             </Appbar.Header>
 
