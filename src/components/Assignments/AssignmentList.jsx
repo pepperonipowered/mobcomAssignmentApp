@@ -34,13 +34,10 @@ const AssignmentList = ({
         })
         setAssignments(assignments)
         setLoading(false)
-        console.log(assignments)
     }})
     // got all data? then unsubscribe from the connection
     return () => subscribe();
   }, [])
-
-  console.log("Assignments: ", assignments)
 
   return (
     <>

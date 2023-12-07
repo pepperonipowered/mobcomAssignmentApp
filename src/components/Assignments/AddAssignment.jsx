@@ -1,4 +1,4 @@
-import { Keyboard, View, ViewComponent } from "react-native";
+   import { Keyboard, View, ViewComponent } from "react-native";
 import { useEffect, useState, useCallback } from "react";
 import {
   TextInput,
@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { format } from "date-fns";
+import { format, getMinutes, setMinutes, subMinutes } from "date-fns";
 import { Formik } from "formik";
 import { FIREBASE_DB } from "../../../firebaseConfig";
 import {
@@ -126,17 +126,8 @@ const AddAssignment = ({ navigation }) => {
         createdAt: values.createdAt,
         updatedAt: values.updatedAt,
       });
-
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `Notification scheduled for ${values.title}`,
-          body:
-            "You have created a schedule due on " +
-            format(date, 'MMMM dd, yyyy'),
-          data: { data: "goes here" },
-        },
-        trigger: { seconds: 1 },
-      });
+       
+      
 
       // fetchAndScheduleNotification();
 
@@ -144,6 +135,30 @@ const AddAssignment = ({ navigation }) => {
       console.log(error);
     }
   };
+  const setNotification = async(time) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `Notification scheduled for ${values.title}.`,
+        body:
+          "You have created a schedule due on " +
+          format(date, 'MMMM dd, yyyy'),
+        data: { data: "goes here" },
+      },
+      trigger: { seconds: time},
+    });
+  }
+
+  const setNotificationTrigger = (mins) => {
+    const notifTrigger = date.getTime() - new Date().getTime()
+    if (notifTrigger < 0) {
+      setNotification(1)
+    } else {
+      setNotification(notifTrigger - (mins * 6000))
+    }
+    console.log( notifTrigger - (mins * 6000) )
+  }
+  
+  
 
   const fetchSubjects = async () => {
     try {
@@ -160,6 +175,7 @@ const AddAssignment = ({ navigation }) => {
   };
   useEffect(()=>{
     fetchSubjects();
+    
   },[])
   // useEffect(() => {
   //   fetchSubjects();
@@ -169,10 +185,11 @@ const AddAssignment = ({ navigation }) => {
   //   }
   // }, [notificationsScheduled]);
 
-  console.log(subjects);
+  // console.log(subjects);
   const onSubmit = (values) => {
     addAssignment(values);
     navigation.navigate("Assignment List");
+    setNotificationTrigger(parseInt(values.notif_mins))
   };
 
   return (
@@ -194,7 +211,7 @@ const AddAssignment = ({ navigation }) => {
           initialValues={{
             title: "",
             description: "",
-            notif_mins: "",
+            notif_mins: '',
             date: date,
             status: false,
             createdAt: serverTimestamp(),
