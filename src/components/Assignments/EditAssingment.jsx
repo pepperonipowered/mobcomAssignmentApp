@@ -1,9 +1,8 @@
 import { Keyboard, View } from "react-native";
 import { useEffect, useState } from "react";
-import { TextInput, Button, MD3Colors, HelperText } from "react-native-paper";
+import { TextInput, Button, MD3Colors } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { format, parseISO } from "date-fns";
-import { Formik } from "formik";
+import { format } from "date-fns";
 import { FIREBASE_DB } from "../../../firebaseConfig";
 import {
   collection,
@@ -13,16 +12,26 @@ import {
   updateDoc,
   onSnapshot,
 } from "firebase/firestore";
-import { addAssignmentSchema } from "../../lib/form-schemas";
 import DropDownPicker from "react-native-dropdown-picker";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 
 const EditAssignment = ({ navigation, route }) => {
   const { assignmentId, subjectId } = route.params;
-  console.log(assignmentId, subjectId);
+
   const assignmentRef = doc(
     collection(FIREBASE_DB, "assignments"),
     assignmentId
   );
+
   const subjectsRef = collection(FIREBASE_DB, "subjects");
 
   const fetchSingleAssignment = async () => {
@@ -145,9 +154,44 @@ const EditAssignment = ({ navigation, route }) => {
     }
   };
 
+  const setNotification = (title, time) => {
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: `Notification scheduled for ${title}.`,
+        body:
+          "You have an assignment due on " +
+          format(date, 'MMMM dd, yyyy') + ' at ' + format(date, 'KK:mm a'),
+      },
+      trigger: { seconds: time},
+    });
+  }
+
+  const setNotificationTrigger = (title ,mins) => {
+    const dateTime = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      time.getHours(),
+      time.getMinutes()
+    );
+
+    const notifTrigger = dateTime.getTime() - new Date().getTime()
+    const setToSeconds = notifTrigger - (mins * 1000)
+    if (notifTrigger < 0) {
+      setNotification(title, 1)
+    } else {
+      setNotification(title, setToSeconds / 1000)
+    }
+    console.log( notifTrigger - (mins * 1000) )
+    console.log('Set to seconds:',setToSeconds / 1000)
+  }
+
   const onSubmit = () => {
+    
     editAssignment();
     navigation.navigate("Assignment List");
+
+    setNotificationTrigger(title, parseInt(notifMins))
   };
 
   return (
@@ -241,6 +285,7 @@ const EditAssignment = ({ navigation, route }) => {
             minimumDate={new Date()}
           />
         )}
+        
         <TextInput
           label="Notify me before due date"
           placeholder="Enter time in minutes"
