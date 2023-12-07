@@ -1,116 +1,67 @@
-import * as Analytics from "expo-firebase-analytics";
-import { View, Text, Dimensions } from "react-native";
 import React, { useState, useEffect } from "react";
 import CustomTopBar from "../components/CustomTopBar";
-import {
-  getDocs,
-  collection,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, query, onSnapshot } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseConfig";
 import { LineChart } from "react-native-chart-kit";
+import { View, Text, Dimensions, ScrollView } from "react-native";
 
 const AnalyticsScreen = () => {
-  const [analyticsData, setAnalyticsData] = useState({
-    totalAssignments: -1,
-    totalSubjects: -1,
-    todayAssignments: -1,
-    todaySubjects: -1,
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [{ data: [] }],
   });
 
   const fetchAndAnalyzeData = () => {
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-
-    const assignmentsQuery = collection(FIREBASE_DB, "assignments");
-    const subjectsQuery = collection(FIREBASE_DB, "subjects");
-    const todayAssignmentsQuery = query(
-      collection(FIREBASE_DB, "assignments"),
-      where("createdAt", ">=", startOfToday)
-    );
-    const todaySubjectsQuery = query(
-      collection(FIREBASE_DB, "subjects"),
-      where("createdAt", ">=", startOfToday)
-    );
+    const assignmentsCollection = collection(FIREBASE_DB, "assignments");
+    const assignmentsQuery = query(assignmentsCollection);
 
     const unsubscribeAssignments = onSnapshot(
       assignmentsQuery,
       (querySnapshot) => {
-        let assignmentsCount = 0;
+        let assignmentsByDate = {};
+        let totalAssignments = 0;
 
         querySnapshot.forEach((doc) => {
           if (doc.exists) {
-            assignmentsCount++;
-            Analytics.logEvent("new_assignment", { name: doc.data().title });
+            let data = doc.data();
+            totalAssignments++;
+
+            let createdAt = data.createdAt.toDate();
+            let dateStr = String(createdAt.getDate()).padStart(2, "0");
+
+            if (!assignmentsByDate[dateStr]) {
+              assignmentsByDate[dateStr] = 1;
+            } else {
+              assignmentsByDate[dateStr]++;
+            }
           }
         });
 
-        setAnalyticsData((prevState) => ({
-          ...prevState,
-          totalAssignments: assignmentsCount,
-        }));
-      }
-    );
+        let dates = Object.keys(assignmentsByDate).sort();
+        let counts = dates.map((date) => assignmentsByDate[date]);
 
-    const unsubscribeTodayAssignments = onSnapshot(
-      todayAssignmentsQuery,
-      (querySnapshot) => {
-        let todayAssignmentsCount = 0;
+        const subjectsCollection = collection(FIREBASE_DB, "subjects");
+        const subjectsQuery = query(subjectsCollection);
 
-        querySnapshot.forEach((doc) => {
-          if (doc.exists) {
-            todayAssignmentsCount++;
-          }
+        onSnapshot(subjectsQuery, (subjectsSnapshot) => {
+          let totalSubjects = subjectsSnapshot.size;
+
+          setChartData({
+            labels: dates,
+            datasets: [
+              {
+                data: counts,
+              },
+            ],
+            totalAssignments,
+            totalSubjects,
+          });
         });
-
-        setAnalyticsData((prevState) => ({
-          ...prevState,
-          todayAssignments: todayAssignmentsCount,
-        }));
-      }
-    );
-
-    const unsubscribeSubjects = onSnapshot(subjectsQuery, (querySnapshot) => {
-      let subjectsCount = 0;
-
-      querySnapshot.forEach((doc) => {
-        if (doc.exists) {
-          subjectsCount++;
-          Analytics.logEvent("new_subject", { name: doc.data().name });
-        }
-      });
-
-      setAnalyticsData((prevState) => ({
-        ...prevState,
-        totalSubjects: subjectsCount,
-      }));
-    });
-
-    const unsubscribeTodaySubjects = onSnapshot(
-      todaySubjectsQuery,
-      (querySnapshot) => {
-        let todaySubjectsCount = 0;
-
-        querySnapshot.forEach((doc) => {
-          if (doc.exists) {
-            todaySubjectsCount++;
-          }
-        });
-
-        setAnalyticsData((prevState) => ({
-          ...prevState,
-          todaySubjects: todaySubjectsCount,
-        }));
       }
     );
 
     return () => {
       unsubscribeAssignments();
-      unsubscribeTodayAssignments();
-      unsubscribeSubjects();
-      unsubscribeTodaySubjects();
     };
   };
 
@@ -119,32 +70,32 @@ const AnalyticsScreen = () => {
     return unsubscribe;
   }, []);
 
-  const data = {
-    labels: ["Assignments", "Subjects"],
-    datasets: [
-      {
-        data: [analyticsData.todayAssignments, analyticsData.todaySubjects],
-      },
-    ],
-  };
+  if (
+    !chartData.labels.length ||
+    !chartData.datasets.length ||
+    !chartData.datasets[0].data.length
+  ) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View>
       <CustomTopBar title={`Analytics`} />
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <LineChart
-          data={data}
-          width={Dimensions.get("window").width - 16}
+          data={chartData}
+          width={chartData.labels.length * 60}
           height={500}
           yAxisLabel=""
+          xAxisLabel=""
           chartConfig={{
             backgroundColor: "#D1C4E9",
             backgroundGradientFrom: "#B39DDB",
             backgroundGradientTo: "#9575CD",
-            decimalPlaces: 2,
+            decimalPlaces: 0,
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             style: {
-              borderRadius: 16,
+              borderRadius: 1,
             },
           }}
           style={{
@@ -163,7 +114,7 @@ const AnalyticsScreen = () => {
             }}
           >
             <Text style={{ fontSize: 20, color: "#000" }}>
-              Total Assignments: {analyticsData.totalAssignments}
+              Total Assignments: {chartData.totalAssignments}
             </Text>
           </View>
           <View
@@ -175,7 +126,7 @@ const AnalyticsScreen = () => {
             }}
           >
             <Text style={{ fontSize: 20, color: "#000" }}>
-              Total Subjects: {analyticsData.totalSubjects}
+              Total Subjects: {chartData.totalSubjects}
             </Text>
           </View>
         </View>
