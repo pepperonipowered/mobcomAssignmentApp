@@ -3,8 +3,7 @@ import { Text, Menu, IconButton, MD3Colors, Divider } from 'react-native-paper';
 import React, { useState } from 'react'
 import { FIREBASE_DB } from '../../../firebaseConfig';
 import { doc, deleteDoc } from 'firebase/firestore';
-
-const SubjectItem = ({subject}) => {
+const SubjectItem = ({navigation, subject}) => {
   
   const [visible, setVisible] = useState(false);
   const openItemMenu = () => setVisible(true);
@@ -44,7 +43,8 @@ const SubjectItem = ({subject}) => {
             <Menu.Item 
                 onPress={
                   () => {
-                    
+                    navigation.navigate('Edit Subject', { subjectId: subject.item.id})
+                      closeMenu();
                     closeMenu();
                   }
                 } 

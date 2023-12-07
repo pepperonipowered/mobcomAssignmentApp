@@ -9,6 +9,7 @@ import AssignmentDetails from '../components/Assignments/AssignmentDetails';
 import AssignmentList from '../components/Assignments/AssignmentList';
 import EditAssignment from '../components/Assignments/EditAssingment';
 
+
 const Stack = createNativeStackNavigator();
 
 const AssignmentsScreen = () => {
@@ -25,6 +26,7 @@ const AssignmentsScreen = () => {
                 <Stack.Screen name="Add Assignment" component={AddAssignment} />
                 <Stack.Screen name="Assignment Details" component={AssignmentDetails} />
                 <Stack.Screen name="Edit Assignment" component={EditAssignment} />
+
             </Stack.Navigator>
         </>
     )
