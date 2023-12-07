@@ -39,6 +39,7 @@ const AddAssignment = ({ navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [time, setTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [minutesbefore, setMinutesBefore] = useState();
 
   const [openSubject, setOpenSubject] = useState(false);
   const [subject, setSubject] = useState("");
@@ -60,8 +61,6 @@ const AddAssignment = ({ navigation }) => {
   ]);
 
   const [loading, setLoading] = useState(true);
-  const [scheduledNotifications, setScheduledNotifications] = useState([]);
-  const [notificationsScheduled, setNotificationsScheduled] = useState(false);
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -74,43 +73,6 @@ const AddAssignment = ({ navigation }) => {
       setTime(selectedTime);
     }
   };
-
-
-
-//Notification
-// async function scheduleNotification(title, seconds, isTimeUp = false, identifier) {
-//   await Notifications.scheduleNotificationAsync({
-//     content: {
-//       title: isTimeUp ? `Your assignment ${title} is due today.`: "Your assignment is almost due.",
-//       body: isTimeUp ? "Due today" : "Almost due",
-//       data: { data: "goes here" },
-//     },
-//     trigger: { seconds },
-//   });
-//   setScheduledNotifications([...scheduledNotifications, identifier]);
-// }
-
-// async function fetchAndScheduleNotification() {
-//   const q = query(collection(FIREBASE_DB, "notifications"));
-//   const querySnapshot = await getDocs(q);
-  
-//   for (const doc of querySnapshot.docs) {
-//     const data = doc.data();
-//     const dateTime = data.date.toDate();
-//     const name = data.name;
-//     const diffInSeconds = (dateTime.getTime() - new Date().getTime()) / 1000;
-//     const identifierGoodDay = `${name}-${dateTime.getTime()}-goodday`;
-//     const identifierTimesUp = `${name}-${dateTime.getTime()}-timesup`;
-
-//     if (diffInSeconds > notifyMinutes * 60 && !scheduledNotifications.includes(identifierGoodDay)) {
-//       await scheduleNotification(name, diffInSeconds - notifyMinutes * 60, false, identifierGoodDay); 
-//       setScheduledNotifications([...scheduledNotifications, identifierGoodDay]);
-//     } else if (diffInSeconds > 0 && !scheduledNotifications.includes(identifierTimesUp)) {
-//       await scheduleNotification(name, diffInSeconds, true, identifierTimesUp); 
-//       setScheduledNotifications([...scheduledNotifications, identifierTimesUp]);
-//     }
-//   }
-// }
 
   const addAssignment = async (values) => {
     try {
@@ -126,40 +88,12 @@ const AddAssignment = ({ navigation }) => {
         createdAt: values.createdAt,
         updatedAt: values.updatedAt,
       });
-       
       
-
-      // fetchAndScheduleNotification();
 
     } catch (error) {
       console.log(error);
     }
   };
-  const setNotification = async(time) => {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `Notification scheduled for ${values.title}.`,
-        body:
-          "You have created a schedule due on " +
-          format(date, 'MMMM dd, yyyy'),
-        data: { data: "goes here" },
-      },
-      trigger: { seconds: time},
-    });
-  }
-
-  const setNotificationTrigger = (mins) => {
-    const notifTrigger = date.getTime() - new Date().getTime()
-    if (notifTrigger < 0) {
-      setNotification(1)
-    } else {
-      setNotification(notifTrigger - (mins * 6000))
-    }
-    console.log( notifTrigger - (mins * 6000) )
-  }
-  
-  
-
   const fetchSubjects = async () => {
     try {
       const snapshot = await getDocs(subjectsRef);
@@ -177,19 +111,44 @@ const AddAssignment = ({ navigation }) => {
     fetchSubjects();
     
   },[])
-  // useEffect(() => {
-  //   fetchSubjects();
-  //   if (!notificationsScheduled) {
-  //     fetchAndScheduleNotification();
-  //     setNotificationsScheduled(true);
-  //   }
-  // }, [notificationsScheduled]);
 
-  // console.log(subjects);
+  const setNotification = (title, time) => {
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: `Notification scheduled for ${title}.`,
+        body:
+          "You have an assignment due on " +
+          format(date, 'MMMM dd, yyyy') + ' at ' + format(date, 'KK:mm a'),
+      },
+      trigger: { seconds: time},
+    });
+  }
+
+  const setNotificationTrigger = (title ,mins) => {
+    const dateTime = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      time.getHours(),
+      time.getMinutes()
+    );
+
+    const notifTrigger = dateTime.getTime() - new Date().getTime()
+    const setToSeconds = notifTrigger - (mins * 1000)
+    if (notifTrigger < 0) {
+      setNotification(title, 1)
+    } else {
+      setNotification(title, setToSeconds / 1000)
+    }
+    console.log( notifTrigger - (mins * 1000) )
+    console.log('Set to seconds:',setToSeconds / 1000)
+  }
+
   const onSubmit = (values) => {
     addAssignment(values);
     navigation.navigate("Assignment List");
-    setNotificationTrigger(parseInt(values.notif_mins))
+    
+    setNotificationTrigger(values.title, parseInt(minutesbefore))
   };
 
   return (
@@ -322,6 +281,7 @@ const AddAssignment = ({ navigation }) => {
                   onChange={onChangeTime}
                 />
               )}
+              {setMinutesBefore(values.notif_mins)}
               <TextInput
                 label="Notify me before due date"
                 placeholder="Enter time in minutes"

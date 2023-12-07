@@ -59,7 +59,7 @@ export default function App() {
               },
             }}
           />
-          <Tab.Screen 
+          {/* <Tab.Screen 
             name="AnalyticsScreen" 
             component={AnalyticsScreen} 
             options={{
@@ -68,7 +68,7 @@ export default function App() {
                 return <Icon name="google-analytics" size={24} color='black' />;
               },
             }}
-          />
+          /> */}
         </Tab.Navigator>
       </NavigationContainer>
       

@@ -15,10 +15,10 @@ const firebaseConfig = {
   
 const FIREBASE_APP = initializeApp(firebaseConfig);
 const FIREBASE_DB = getFirestore(FIREBASE_APP);
-const FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
+// const FIREBASE_ANALYTICS = getAnalytics(FIREBASE_APP);
 
 export {
     FIREBASE_APP,
     FIREBASE_DB,
-    FIREBASE_ANALYTICS
+    // FIREBASE_ANALYTICS
 }
